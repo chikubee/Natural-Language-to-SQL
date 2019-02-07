@@ -1,0 +1,1 @@
+SELECT DISTINCT instructor.inst_id FROM instructor WHERE instructor.salary > ( SELECT AVG(instructor.salary) FROM instructor )

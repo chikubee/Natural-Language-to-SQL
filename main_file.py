@@ -28,7 +28,7 @@ def compare():
 
 op_file = open("output.txt", "w")
 
-db = database.Database("localhost", "nandans16", "1234", "bank")
+db = database.Database("localhost", "root", "", "test")
 db.connect()
 
 overall_details = overall_details.OverallDetails(db)

@@ -27,7 +27,7 @@ class SQLQueryDetails:
 
         if self.clauses.type_flag["S"] == 1:
             self.create_implicit_map(self.clauses.constant_list)
-            print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
+            # print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
 
         print("\nNoun map: ", self.clauses.noun_map)
         print("\nVerb list: ", self.clauses.verb_list)
@@ -58,7 +58,7 @@ class SQLQueryDetails:
 
         if self.clauses.type_flag["S"] == 1:
             self.check_for_implicit(table_details_object, table_attributes_details_object)
-            print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
+            # print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
 
         clauses.WhereClauseContent.print_where_clause(self.clauses.where_clause)
         clauses.OrderByClause.print_order_by_clause(self.clauses.order_clause)
@@ -212,8 +212,12 @@ class SQLQueryDetails:
         return where_count + 1
 
     def noun_present_in_aggregate(self, noun):
-        if self.clauses.aggregate_clause[len(self.clauses.aggregate_clause) - 1].attr_name == noun:
-            return True
+        print("aggregate clauses ", self.clauses.aggregate_clause)
+        print("length ", len(self.clauses.aggregate_clause) - 1)
+        if self.clauses.aggregate_clause:
+            if self.clauses.aggregate_clause[len(self.clauses.aggregate_clause) - 1].attr_name == noun:
+                return True
+            return False
         return False
 
     # Create lists using the tokens and corresponding tags

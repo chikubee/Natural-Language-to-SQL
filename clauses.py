@@ -88,6 +88,7 @@ class Clauses:
                 related_tables_array2 = table_attributes_details.TableAttributesDetails.get_referenced_tables(self.db,
                                                                                                               table2)
                 print("rel_array12", table1, table2, related_tables_array1, related_tables_array2)
+                
                 for table3 in related_tables_array1:
                     for table4 in related_tables_array2:
                         if table3 == table4 and table3 not in self.table_set:

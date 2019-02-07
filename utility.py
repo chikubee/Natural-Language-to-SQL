@@ -32,11 +32,11 @@ class Utility:
     escape_array = ["find", "select", "publish", "print", "who", "where", "which", "what", "give", "list", "i", "we",
                     "show"]
 
-    insert_array = ["insert", "put"]
+    insert_array = ["insert", "put", "add"]
 
     update_array = ["update", "edit", "set", "change"]
 
-    delete_array = ["delete", "remove"]
+    delete_array = ["delete", "remove", "drop"]
 
     @staticmethod
     def has_numbers(string):
@@ -64,8 +64,9 @@ class Utility:
 
     @staticmethod
     def tag(tokens):
-        #java_path = "C:/Program Files/Java/jdk1.8.0_31/bin/java.exe"
-        #os.environ['JAVAHOME'] = java_path
+        java_path = "C:/Program Files/Java/jdk1.8.0_201/bin/java.exe"
+
+        os.environ['JAVAHOME'] = java_path
         special_symbols_array = ["the", "a", "an"]
         english_postagger = StanfordPOSTagger(
             'tagger/english-bidirectional-distsim.tagger',
@@ -94,6 +95,7 @@ class Utility:
     # para3 - perfect match / substring match flag
     # para4 - both match / none flag
     # returns true / false
+
     @staticmethod
     def check_substring_attr(noun_para, attr_para, substring_perfect_flag, both_match_flag=None):
         attr_para = attr_para.lower()

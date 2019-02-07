@@ -29,6 +29,7 @@ class OverallDetails:
         return result
 
     def get_row_for_value(self, table_name, column_name, value):
+        qry = "SELECT " + column_name + " FROM " + table_name + " WHERE INSTR(" + column_name + ", '" + value + "') > 0"
         result = self.db.execute_query(
             "SELECT " + column_name + " FROM " + table_name + " WHERE INSTR(" + column_name + ", '" + value + "') > 0")
         if len(result) > 0:
