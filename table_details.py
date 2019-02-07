@@ -45,6 +45,15 @@ class TableDetails:
 
     def add_relation_tables(self):
         break_flag = 0
+        print("Complete table set ", self.table_set)
+
+        for table in self.table_set:
+            related_tables_array_test = table_attributes_details.TableAttributesDetails.test_get_referenced_tables(self.db,
+                                                                                                                   table)
+
+        print("TETSING")
+        print(related_tables_array_test)
+
         for table1 in self.table_set:
             for table2 in self.table_set:
                 if table1 == table2:

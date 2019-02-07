@@ -422,3 +422,10 @@ class TableAttributesDetails:
                          "INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = '" + db.database_name + "' "
                                                                                                              "AND REFERENCED_TABLE_NAME = '" + t_name + "';")
         return result
+
+    @staticmethod
+    def test_get_referenced_tables(db, table_name):
+        find_keys_query = "SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE table_name = '" + table_name +"' " "AND REFERENCED_TABLE_SCHEMA = '" + db.database_name + "' AND constraint_name = 'PRIMARY'";
+        print(find_keys_query)
+        temp_result = db.execute_query(find_keys_query)
+        return temp_result
