@@ -50,3 +50,13 @@ class OverallDetails:
                                                                                  len(element[0]))
             if match.size == len(primary_key):
                 return element[1]
+
+    def get_table_from_attr(self, attr):
+        result = self.db.execute_query("SELECT GROUP_CONCAT(COLUMN_NAME), TABLE_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE \
+                WHERE TABLE_SCHEMA = '"+ self.db.database_name +"' GROUP BY TABLE_NAME ")
+        print(result)
+        for element in result:
+            match = SequenceMatcher(None, attr, element[0]).find_longest_match(0, len(attr), 0,
+                                                                                 len(element[0]))
+            if match.size == len(attr):
+                return element[1]

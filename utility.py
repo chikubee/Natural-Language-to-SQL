@@ -3,16 +3,24 @@ import os
 from difflib import SequenceMatcher
 import nltk
 from nltk.stem import PorterStemmer, WordNetLemmatizer
+import spacy
+from spacy import displacy
 
+nlp = spacy.load('en')
+retrained_nlp = spacy.load('retrained_en_model')
 
 class Utility:
     # Words in a natural language which tell us that the information that follows, belongs to the WHERE clause
     break_words = ["in", "for", "at", "whose", "having", "where", "have", "who", "that", "with", "by", "under", "from"]
 
     # Dictionary mapping relational operators with their algebraic signs
+    #@author: ANKITA MAKKER
+
+    rel_op_update = {"exceed": "greater", "at least": "greater equal", "at most": "less equal", "limit": "less"}
+    
     rel_op_dict = {"greater": ">", "more": ">", "less": "<", "greater equal": ">=", "less equal": "<=", "equal": "=",
                    "": "=", "except": "!=", "not": "!="}
-
+ 
     order_by_dict = {"ordered": "ASC", "sorted": "ASC", "alphabetical": "ASC", "alphabetically": "ASC",
                      "increasing": "ASC", "decreasing": "DESC", "ascending": "ASC", "descending": "DESC",
                      "reverse": "DESC", "alphabetic": "ASC"}
@@ -30,7 +38,7 @@ class Utility:
                        "eighth": 8, "ninth": 9, "tenth": 10}
 
     escape_array = ["find", "select", "publish", "print", "who", "where", "which", "what", "give", "list", "i", "we",
-                    "show"]
+                    "show", "for"]
 
     insert_array = ["insert", "put", "add"]
 
@@ -38,13 +46,20 @@ class Utility:
 
     delete_array = ["delete", "remove", "drop"]
 
+    #@author: ANKITA MAKKER
+
+    inversion_array = {">": "<=", "<": ">=", "=": "!=", "!=": "=", ">=": "<", "<=": ">"}
+
+
     @staticmethod
     def has_numbers(string):
         return any(char.isdigit() for char in string)
 
     @staticmethod
     def parse_string_to_float(string):
+        print(string)
         string_temp = string.replace(",", "")
+        print("temp_string ", string_temp)
         return float(string_temp)
 
     # Tokenize the string
@@ -110,7 +125,6 @@ class Utility:
 
             # if there is no _ in attr (name or studName)
             if len(split_attr) == 1:
-
                 # if both_match_flag is both match, i.e. attribute is made of combined noun and no _ (studName)
                 if both_match_flag == "both_match":
                     noun_split_array = noun_para.split()  # splitting combined noun by space (name, student)
@@ -227,3 +241,81 @@ class Utility:
                 token_element[1] = "NNP"
             tagged_tokens.append(token_element)
         return tagged_tokens
+
+    #@author: ANKITA MAKKER
+    @staticmethod
+    def get_similarity(word1, word2):
+        sim = 0
+        # code added here for similarity, @author: Ankita [done this for single as of now, can be done for composite]
+        if nlp.vocab.strings[word2] and nlp.vocab.strings[word1]:
+            sim =  nlp(word2).similarity(nlp(word1))
+        return sim
+
+    #@author: ANKITA MAKKER
+    @staticmethod
+    def get_negation_condition(text, condition_params):
+        dep_list = []
+        answer = {}
+        temp = {}
+        negation_attr = []
+        children_list = set()
+
+        for token in nlp(text):
+            dep_list.append((str(token),  [str(child) for child in token.children]))
+            [children_list.add(str(child)) for child in token.children]
+
+        print("DEPENDENCY GRAPH")
+        print(dep_list)
+        # displacy.serve(nlp(text), style="dep")
+        for param in condition_params:
+            param_list = []
+
+            for item in dep_list:
+                if dep_list.index(item) != param[1]:
+                    param_list.append(item)
+                else:
+                    param_list.append(item)
+                    break
+
+            item = param_list[-1]
+            temp = item[1]
+
+            temp_list = param_list
+            
+            for x in temp:
+                for p in reversed(param_list):
+                    print("p ", p)
+                    if p[0] == x:
+                        for y in p[1]:
+                            if y not in item[1]:
+                                item[1].append(y)
+
+            #checked for case with no parent
+            def get_dep(it, l):
+                if it in children_list:
+                    for p in temp_list:
+                        print("p ", p)
+                        if it in p[1]:
+                            for y in p[1]:
+                                if y not in item[1]:
+                                    l.append(y)
+
+                            get_dep(p[0], l)
+                            print(l)
+                            break
+
+            get_dep(item[0], item[1])
+                    
+            answer[param] = param_list
+            
+            if 'not' in param_list[-1][1]:
+                print(param_list[-1])
+                negation_attr.append((param_list[-1][0], param[1], param[2]))
+
+        return negation_attr
+
+    #@author: ANKITA MAKKER
+    @staticmethod
+    def get_ner(text):
+        nlp_doc = retrained_nlp(text)
+        return [(ent.text, ent.label_) for ent in nlp_doc.ents]

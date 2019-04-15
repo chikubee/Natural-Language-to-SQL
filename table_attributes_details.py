@@ -10,6 +10,7 @@ class TableAttributesDetails:
         self.overall_details = overall_details
         self.table_details = table_details
         self.clauses = clauses
+        self.similarities = list()
 
     def collect(self):
         self.map_nouns_to_attributes()
@@ -154,7 +155,6 @@ class TableAttributesDetails:
             # print("---", noun_para, attribute)
 
             if utility.Utility.check_substring_attr(noun_para, attribute, "perfect_match"):  # check
-                # print("6")
                 self.add_noun_attr_tn_wrapper(table_name_para, noun_para, attribute)
 
                 found_flag = 1  # found in table set
@@ -165,6 +165,12 @@ class TableAttributesDetails:
                 self.add_noun_attr_tn_wrapper(table_name_para, noun_para, attribute)
 
                 found_flag = 1  # found in table set
+
+            # @author: Ankita Makker
+            if found_flag == 0:
+                sim = utility.Utility.get_similarity(noun_para, attribute)
+                self.similarities.append((attribute, sim, table_name_para))
+
         return found_flag
 
     def map_nouns_to_attributes(self):
@@ -199,10 +205,8 @@ class TableAttributesDetails:
 
             # if noun is a single word
             else:
-
                 # first, traverse through all tables of table set
                 for table_name in self.table_details.table_set:
-                    # print()
                     temp_found_flag = self.map_single_nouns_to_attributes(noun, table_name)
 
                     if found_flag == 0 and temp_found_flag == 1:
@@ -211,12 +215,29 @@ class TableAttributesDetails:
                 # if corresponding attr for noun is not found in table set
                 if found_flag == 0:
                     # traverse for all tables of map
+                    # @author: ANKITA MAKKER
                     for table_name in self.overall_details.table_attr_map.keys():
                         if table_name not in self.table_details.table_set:
                             found_flag = self.map_single_nouns_to_attributes(noun, table_name)
 
                             if found_flag == 1:
                                 self.table_details.table_set.append(table_name)  # break???
+
+                    if found_flag == 0:     
+                        if self.similarities:
+                            max_sim = max(self.similarities,key=lambda item:item[1])
+                            
+                            if max_sim[1] > 0.75:
+                                temp_attr = max_sim[0]
+                   
+                                print(" FINAL ATTR ",temp_attr)
+                                print(self.clauses.noun_map)
+                                self.clauses.noun_map[temp_attr] = self.clauses.noun_map[noun]
+                                del self.clauses.noun_map[noun]
+                                print(self.clauses.noun_map)
+                                self.table_details.table_set.append(max_sim[2])
+                                print(self.table_details.table_set)
+                                found_flag = 1
 
     def get_corresponding_attribute(self, table1, table2):
         related_tables_array = self.get_referenced_tables_attributes(self.db, table1)
@@ -395,7 +416,7 @@ class TableAttributesDetails:
         if filter_flag == "":
             for table in self.table_details.table_set:
                     [subset_map, flag] = self.get_subset(table, subset_map)
-        # print("subset_map", subset_map)
+        print("subset_map", subset_map)
         self.delete_redundant_tables(subset_map)
         subset_map = dict()
         self.clean_up_attributes(subset_map)
@@ -425,7 +446,9 @@ class TableAttributesDetails:
 
     @staticmethod
     def test_get_referenced_tables(db, table_name):
+        find_keys_query_new = "SELECT k.column_name FROM information_schema.table_constraints t JOIN information_schema.key_column_usage k USING(constraint_name,table_schema,table_name) WHERE t.constraint_type='PRIMARY KEY' AND t.table_schema= '" +db.database_name + "' AND t.table_name= '" + table_name + "'";
         find_keys_query = "SELECT COLUMN_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE table_name = '" + table_name +"' " "AND REFERENCED_TABLE_SCHEMA = '" + db.database_name + "' AND constraint_name = 'PRIMARY'";
-        print(find_keys_query)
-        temp_result = db.execute_query(find_keys_query)
+        # print("CHECK THIS OUT.... ", find_keys_query_new)
+        temp_result = db.execute_query(find_keys_query_new)
+        # print("CHECK RESULTS FOR THIS QUERY... ", temp_result)
         return temp_result

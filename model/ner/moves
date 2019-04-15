@@ -1,0 +1,32 @@
+Å´transitions⁄ä[
+  {
+    "move":1,
+    "clas":0,
+    "name":"B-COURSE",
+    "label":"COURSE"
+  },
+  {
+    "move":2,
+    "clas":1,
+    "name":"I-COURSE",
+    "label":"COURSE"
+  },
+  {
+    "move":3,
+    "clas":2,
+    "name":"L-COURSE",
+    "label":"COURSE"
+  },
+  {
+    "move":4,
+    "clas":3,
+    "name":"U-COURSE",
+    "label":"COURSE"
+  },
+  {
+    "move":5,
+    "clas":4,
+    "name":"O",
+    "label":""
+  }
+]

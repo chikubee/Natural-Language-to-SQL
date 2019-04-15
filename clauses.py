@@ -24,7 +24,7 @@ class Clauses:
         self.insert_clause = []
         self.update_clause = []
         self.set_clause = []
-
+        self.negation_constants = []
         self.order_default_list = []
         self.noun_map = dict()
         self.verb_list = list()
@@ -111,9 +111,18 @@ class Clauses:
                     if break_flag == 1:
                         break
 
+    #@author: ANKITA MAKKER
+    def create_neg_query(self, where_clause, negation_constants, inversion_array):
+        for element in where_clause:
+            for neg_element in negation_constants:
+                if element.constant == neg_element[0] and element.attr_name == neg_element[2]:
+                    i = self.where_clause.index(element)
+                    self.where_clause[i].rel_op = inversion_array[self.where_clause[i].rel_op]
+
+        return self.create_query()
+
     # The template of the final SQL Query using the found attributes and table sets
     def create_query(self):
-
         if self.type_flag["S"] == 1:
             select_clause, from_clause, where_clause, order_clause, group_by_clause, \
                 having_clause, limit_clause = "", "", "", "", "", "", ""
@@ -381,6 +390,7 @@ class Clauses:
         length = len(self.where_clause)
         # for each record in where clause array
         for i in range(0, len(self.where_clause)):
+            print("INTERIM CHECK FOR TABLE      ", self.where_clause[i].table)
             if self.where_clause[i].use_where != use_where:
                 continue
             # loop flag is one, then continue, to skip the iteration, used for 'between'
@@ -506,6 +516,7 @@ class WhereClauseContent:
                         where_clause_element.table == aggregate_clause_element.table and \
                                 aggregate_clause_element.tag == "W" and aggregate_clause_element.type == "attr":
 
+                    print("MUST CHECK ...", where_clause_element)
                     where_clause_element.use_where = 0
                     clauses.clause_flag["H"] = 1
                     where_clause_element.aggr = aggregate_clause_element.aggregate
@@ -528,7 +539,6 @@ class WhereClauseContent:
             print(element.count, element.table, element.attr_name, element.rel_op,
                   element.constant, element.conjunction, element.use_where, element.aggr, element.constant_flag,
                     "attribute:", element.attribute_flag)
-
 
 class OrderByClause:
     def __init__(self, order, attr_name, table=""):

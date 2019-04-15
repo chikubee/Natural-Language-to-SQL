@@ -1,1 +1,1 @@
-SELECT DISTINCT instructor.inst_id FROM instructor WHERE instructor.salary > ( SELECT AVG(instructor.salary) FROM instructor )
+SELECT DISTINCT enroll.student_id, student.name FROM student, enroll, course WHERE ( course.course = 'Physics' AND course.course = 'Mathematics' )

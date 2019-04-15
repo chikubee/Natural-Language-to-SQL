@@ -10,6 +10,10 @@ class TableDetails:
     def collect_tables(self, clauses, overall_details):
         self.map_nouns_verbs_to_tables(clauses, overall_details)
         self.add_relation_tables()
+        self.add_children_tables(overall_details)
+
+        print("CHECK NOW")
+        print(self.table_set)
         return self.table_set
 
     # CONSTRUCT TABLES SET
@@ -43,16 +47,37 @@ class TableDetails:
                         self.table_set.append(table_name)  # add table name to table set
                         clauses.clause_flag["F"] = 1  # set FROM clause flag to 1
 
+
+    def add_children_tables(self, overall_details):
+        if self.table_set:
+            for table in self.table_set:
+                reference_keys = table_attributes_details.TableAttributesDetails.test_get_referenced_tables(self.db,
+                                                                                                              table)
+
+                for fk in reference_keys:
+                    for table_name in overall_details.tables:
+                        return_temp_value = utility.Utility.check_substring_table(fk, table_name)
+
+                        if return_temp_value[0]:  # if true
+
+                            if table_name not in self.table_set:  # add unique table name in table set
+                                print("Foreign key '" + fk + "' mapped to table '" + table_name + "'")
+                                self.table_set.append(table_name)  # add table name to table set
+                                # clauses.clause_flag["F"] = 1  # set FROM clause flag to 1
+
+
     def add_relation_tables(self):
         break_flag = 0
         print("Complete table set ", self.table_set)
-
+        related_tables_array_test = []
         for table in self.table_set:
             related_tables_array_test = table_attributes_details.TableAttributesDetails.test_get_referenced_tables(self.db,
                                                                                                                    table)
 
-        print("TETSING")
-        print(related_tables_array_test)
+        
+        if len(related_tables_array_test)!=0:
+            print("TESTING")
+            print(related_tables_array_test)
 
         for table1 in self.table_set:
             for table2 in self.table_set:
@@ -62,6 +87,11 @@ class TableDetails:
                                                                                                               table1)
                 related_tables_array2 = table_attributes_details.TableAttributesDetails.get_referenced_tables(self.db,
                                                                                                               table2)
+
+                print(related_tables_array1)
+                print("...")
+                print(related_tables_array2)
+
                 for table in related_tables_array1:
                     if table in related_tables_array2 and table not in self.table_set:
                         self.table_set.append(table)

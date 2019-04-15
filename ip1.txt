@@ -1,1 +1,1 @@
-Find the instructor id whose salary is greater than average salary of instructor
+list of students who are enrolled for Physics and Mathematics

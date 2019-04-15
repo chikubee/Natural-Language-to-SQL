@@ -12,8 +12,10 @@ class SQLQueryDetails:
         self.overall_details = overall_details
         self.clauses = clauses.Clauses(self.db)
 
+    #@author: ANKITA MAKKER [NEGATION HANDLING]
     def collect_query_details(self, natural_lang_query):
-        tokens = utility.Utility.tokenize(natural_lang_query)
+        update_natural_lang_query = self.preprocess(natural_lang_query)
+        tokens = utility.Utility.tokenize(update_natural_lang_query)
         print("\nTokens: ", tokens)
 
         tagged_tokens = utility.Utility.tag(tokens)
@@ -27,7 +29,9 @@ class SQLQueryDetails:
 
         if self.clauses.type_flag["S"] == 1:
             self.create_implicit_map(self.clauses.constant_list)
-            # print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
+            print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
+
+        print("AFTER ENTITY RECOGNITION, IMPLICIT HASH MAP.. ", self.get_implicit_map_after_ner(update_natural_lang_query))
 
         print("\nNoun map: ", self.clauses.noun_map)
         print("\nVerb list: ", self.clauses.verb_list)
@@ -49,6 +53,7 @@ class SQLQueryDetails:
 
         if len(table_details_object.table_set) == 0:
             raise Exception('No tables')
+
         print("\nAfter filtering:")
         print("Table set: ", table_details_object.table_set)
         print("Table attribute map: ", table_attributes_details_object.attr_table_with_tag_map)
@@ -58,7 +63,8 @@ class SQLQueryDetails:
 
         if self.clauses.type_flag["S"] == 1:
             self.check_for_implicit(table_details_object, table_attributes_details_object)
-            # print("\nImplicit_Hash_Map: ", self.clauses.implicit_hash_map)
+            print("\nImplicit_Hash_Map NEW AFTER CHECK: ", self.clauses.implicit_hash_map)
+        
 
         clauses.WhereClauseContent.print_where_clause(self.clauses.where_clause)
         clauses.OrderByClause.print_order_by_clause(self.clauses.order_clause)
@@ -66,8 +72,55 @@ class SQLQueryDetails:
         clauses.GroupByClause.print_group_by(self.clauses.group_by_clause)
         clauses.InsertClause.print_insert(self.clauses.insert_clause)
         clauses.SetClause.print_set(self.clauses.set_clause)
-
+    
+        constants = self.get_where_clause_constants(self.clauses.where_clause)
+        condition_params = self.get_condition_params(update_natural_lang_query, constants)
+        print("CONDITION PARAMS.... ", condition_params)
+        negation_constants = utility.Utility.get_negation_condition(update_natural_lang_query, condition_params)
+        print("NEGATION CONSTANTS...", negation_constants)
+        self.clauses.negation_constants = negation_constants
         return self.clauses
+
+    #@author: ANKITA MAKKER (I,II,III,IV,V)
+    def preprocess(self, text):
+        for word in utility.Utility.rel_op_update:
+            if word in text:
+                text = text.replace(word, utility.Utility.rel_op_update[word])
+        return text
+
+    def get_implicit_map_after_ner(self, text):
+        ner = utility.Utility.get_ner(text)
+        print(ner)
+        for entity in ner:
+            test_implicit_list = []
+            temp_list = []
+            if entity[0] in self.clauses.implicit_hash_map:
+                 if not self.clauses.implicit_hash_map[entity[0]]:
+                    #table
+                    temp_list.append(entity[1].lower())
+                    #attribute
+                    temp_list.append(entity[1].lower())
+                    print("TEMP LIST ", temp_list)
+                    test_implicit_list.append(temp_list)
+                    self.clauses.implicit_hash_map[entity[0]] = test_implicit_list
+
+        return self.clauses.implicit_hash_map
+
+    def get_where_clause_constants(self, where_clause):
+        return [(element.constant, element.attr_name) for element in where_clause]
+
+    def get_condition_params(self, text, constants):
+        condition_params = []
+        test = text.split()
+        for item in constants:
+            const_list = [i for i, x in enumerate(test) if x == item[0]]
+            for it in const_list:
+                condition_params.append((item[0], it, item[1]))
+        return condition_params
+
+    def get_negated_attributes(self, text, attributes):
+        negated_attributes = utility.Utility.get_negation_condition(text, attributes)
+
 
     def remove_unwanted_implicit(self):
         temp_dict = dict()
@@ -92,6 +145,16 @@ class SQLQueryDetails:
                 self.clauses.implicit_hash_map[constant] = []
                 self.clauses.implicit_hash_map[constant].append([table, primary_key])
 
+    def remove_unwanted_implicit_testing(self, table_details_object):
+        for constant in self.clauses.implicit_hash_map.keys():
+            if self.clauses.implicit_hash_map[constant] and len(self.clauses.implicit_hash_map[constant]) != 1:
+                for element in self.clauses.implicit_hash_map[constant]:
+                    if element[0] in table_details_object.table_set:
+                        self.clauses.implicit_hash_map[constant] = []
+                        self.clauses.implicit_hash_map[constant].append([element[0], element[1]])
+                        break
+
+
     def replace_implicit_in_where(self, table_details_object):
         for where_clause in self.clauses.where_clause:
             for constant in self.clauses.implicit_hash_map.keys():
@@ -107,6 +170,7 @@ class SQLQueryDetails:
 
     def create_where_objects_implicit(self, table_details_object, table_attributes_details_object):
         for constant in self.clauses.implicit_hash_map.keys():
+            print("major check..", constant)
             constant_present = 0
             for where_clause in self.clauses.where_clause:
                 if where_clause.constant == constant:
@@ -115,6 +179,8 @@ class SQLQueryDetails:
             if constant_present == 0 and self.clauses.implicit_hash_map[constant]:
                 attr = self.clauses.implicit_hash_map[constant][0][1]
                 table = self.clauses.implicit_hash_map[constant][0][0]
+                print(self.clauses.implicit_hash_map[constant])
+
                 clauses.WhereClauseContent.add_where_clause(self.clauses, self.clauses.where_count, attr, "=", constant,
                                                             table=table, attribute_flag=1)
                 for table_name in table_details_object.table_set:
@@ -124,7 +190,7 @@ class SQLQueryDetails:
                     table_details_object.table_set.append(table)
 
     def check_for_implicit(self, table_details_object, table_attributes_details_object):
-        self.remove_unwanted_implicit()
+        self.remove_unwanted_implicit_testing(table_details_object)
         self.replace_implicit_in_where(table_details_object)
         self.create_where_objects_implicit(table_details_object, table_attributes_details_object)
 
@@ -158,7 +224,7 @@ class SQLQueryDetails:
 
     @staticmethod
     def stem_token(current_token, current_token_tag):
-        if current_token_tag != "NNP" and current_token_tag != "NNPS" and current_token_tag != "CD" and \
+        if current_token_tag != "NN" and current_token_tag != "NNP" and current_token_tag != "NNPS" and current_token_tag != "CD" and \
                         current_token not in utility.Utility.break_words and \
                         current_token not in utility.Utility.rel_op_dict.keys() and \
                         current_token not in utility.Utility.order_by_dict.keys() and \
@@ -925,6 +991,7 @@ class SQLQueryDetails:
 
         # final word is noun  - Pranay is the name
         elif tag == "W" and earlier_token_flag != "" and final_const != "":
+            print("check 1 ", final_const)
             final_noun = temp_noun
             self.add_to_noun_map(final_noun, tag)
             if aggregate_flag == 1:
@@ -939,6 +1006,7 @@ class SQLQueryDetails:
         elif tag == "W" and earlier_token_flag == "" and constant_flag == "first_const" and temp_attr != "":
             if final_const == "":
                 final_const = temp_continuous_const
+            print("check 2 ", final_const)
             clauses.WhereClauseContent.add_where_clause(self.clauses, where_count, temp_attr,
                                                         utility.Utility.rel_op_dict[final_rel_op], final_const)
             self.clauses.constant_list.append(final_const)
@@ -946,6 +1014,7 @@ class SQLQueryDetails:
 
         # Perryridge branch name
         elif tag == "W" and earlier_token_flag == "" and final_const != "":
+            print("check 3 ", final_const)
             clauses.WhereClauseContent.add_where_clause(self.clauses, where_count, temp_attr,
                                                         utility.Utility.rel_op_dict[final_rel_op], final_const)
             self.clauses.constant_list.append(final_const)

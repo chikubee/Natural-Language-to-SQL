@@ -1,0 +1,19 @@
+{
+  "token_vector_width":128,
+  "beam_density":0.0,
+  "beam_width":1,
+  "hist_width":0,
+  "maxout_pieces":2,
+  "hist_size":0,
+  "nr_class":5,
+  "hidden_depth":1,
+  "pretrained_vectors":null,
+  "hidden_width":200,
+  "cnn_maxout_pieces":3,
+  "extra_labels":[
+    "COURSE",
+    "COURSE",
+    "COURSE",
+    "COURSE"
+  ]
+}

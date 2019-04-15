@@ -1,0 +1,65 @@
+remove instructors
+show the user with username paul85
+count of all users where gender is Male
+insert the user with gender Female and user_id 1 and username sweety
+remove the users where username is mike28
+list all student
+count all student
+what is the sum of the age of students
+group the users by gender
+what is the count of all the students
+what is the maximum age of students
+Find the names of all the students having gender Male
+find the mean of the age of students
+
+List all students in decreasing order of age
+
+Give the course name where maximum salary of instructor is greater than 5000
+
+
+Find the course taught by Ankita
+
+insert an instructor with id 7456 and name Vinayak and salary 20000 taking courses Deep Learning
+
+who advices NLP ? 
+Find the instructor id whose salary is greater than average salary of instructor
+Who teaches Physics?
+Find the instructor id whose salary is greater than average salary of instructor
+Show the name of the instructors who advice Physics
+
+how many hours is Physics taught? [false case, wrong mapping done]
+list the instructor ids of those who teach Physics [correct case]
+list the instructor names of those who teach Physics [correct case]
+
+
+total hours for which Physics is taught?
+Find the number of hours for which Physics is taught by Mike
+how many hours is Physics taught for
+Find the number of hours for which Physics is taught by Mike [corrected case]
+
+who all are enrolled for Physcis
+List the students who are enrolled for Physics?
+list the courses enrolled by Ankita
+
+What is the income of Mike? [failure, corrected by similarity, keep noun in the match]
+Add column sex in student table [nothing]
+
+======
+ngram problem identification
+find hours for which Mike teach Physics for?
+For how many hours, Mike teaches Physics
+======
+
+
+this is for negation handling and lookups [atmost, atleast, exceed, overflow, overshoot]
+===============================================
+Find instructors with salary not more than 20000
+Find instructors with salary exceeding 10000
+===============================================
+what is the income of Mike? [major improvement]
+================ ==============================
+done negation handling [do testing]
+show students with age not less than 5 and enrolled in Physics
+list students not enrolled in Physics or NLP
+======================================================
+list of students who are enrolled in Mathematics and Physics
