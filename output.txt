@@ -1,1 +1,1 @@
-SELECT DISTINCT enroll.student_id, student.name FROM student, enroll, course WHERE ( course.course = 'Physics' AND course.course = 'Mathematics' )
+SELECT DISTINCT student.name, enroll.student_id FROM student, enroll, course WHERE ( course.course = 'Physics' AND course.course = 'Mathematics' )
